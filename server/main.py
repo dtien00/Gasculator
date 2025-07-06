@@ -19,4 +19,4 @@ async def hello():
 @app.post("/api/form")
 async def submit_form(data: dict):
     print("Form data received:", data)
-    return {"message": "Form submitted!", "data": data}
+    return {"message": "Form submitted.", "data": data}

@@ -34,13 +34,12 @@ function App() {
     console.log('Form submitted with data: ', formData);
     const res = await fetch('http://localhost:8000/api/form', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(formData),
     });
     const data = await res.json();
-    alert(data.message);
+    alert(data.message); // Display the response message "Form submitted!"
+    alert(data.data.car_make); // Display the form data as an Object
   }
 
   return (
