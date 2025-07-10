@@ -5,6 +5,10 @@ import Input from './Input.jsx'
 function App() {
 
   const [message, setMessage] = useState('')
+  const [address, setAddress] = useState('');
+  const [destination, setDestination] = useState('');
+  const [error, setError] = useState('');
+  
   const [formData, setFormData] = useState({
     car_make: '',
     car_model: '',
@@ -14,13 +18,43 @@ function App() {
   });
 
   useEffect(() => {
-    fetch('http://localhost8000/api/hello')
+    fetch('http://localhost:8000/api/hello')
       .then(res => res.json())
-      .then(data => setMessage(data.message));
+      .then(data => setMessage(data.message))
+      .catch(err => console.error('Error fetching message:', err));
   }, []);
 
+  useEffect(() => {
+    // react to any changes in address
+    console.log("Address changed to:", address);
+    setFormData(prevData => ({
+      ...prevData,
+      location_origin: address
+    }))
+  }, [address]);
+
+  
+  useEffect(() => {
+    // react to any changes in address
+    console.log("Destination changed to:", destination);
+    setFormData(prevData => ({
+      ...prevData,
+      location_destination: destination
+    }))
+  }, [destination]);
+
+  const handleAddressChange = (newAddress) => {
+    console.log("Address input changed to:", newAddress);
+    setAddress(newAddress);
+  }
+
+  const handleDestinationChange = (newDestination) => {
+    console.log("Destination input changed to:", newDestination);
+    setDestination(newDestination);
+  }
   const handleForm = (e) => {
     const { name, value } = e.target;
+    console.log(`Field changed: ${name} = ${value}`);
     setFormData(prevData => ({
       ...prevData,
       [name]: value
@@ -43,7 +77,7 @@ function App() {
   }
 
   return (
-      <Input submitHook={handleSubmit} formHook={handleForm} form={formData}/>
+      <Input handleSubmit={handleSubmit} formHook={handleForm} form={formData} handleAddressChange={handleAddressChange} handleDestinationChange={handleDestinationChange}/>
   )
 }
 
