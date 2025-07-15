@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import './App.css'
-import Input from './Input.jsx'
+import CarInput from './CarInput.jsx'
+import LocationInput from './LocationInput.jsx';
+import GasInput from './GasInput.jsx';
 
 function App() {
 
@@ -13,6 +15,7 @@ function App() {
     car_make: '',
     car_model: '',
     car_year: '',
+    car_option: '',
     location_origin: '',
     location_destination: ''
   });
@@ -73,11 +76,35 @@ function App() {
     });
     const data = await res.json();
     alert(data.message); // Display the response message "Form submitted!"
-    alert(data.data.car_make); // Display the form data as an Object
+
+    console.log('Determining distance and time...');
+    const req = await fetch(`http://localhost:8000/determine-distance?origin=${formData.location_origin}&destination=${formData.location_destination}`);
+    const req_data = await req.json();
+    console.log('Distance and time determined:', req_data.distance, " ", req_data.duration);
   }
 
   return (
-      <Input handleSubmit={handleSubmit} formHook={handleForm} form={formData} handleAddressChange={handleAddressChange} handleDestinationChange={handleDestinationChange}/>
+    <div className="Gasculator" style={{maxWidth: '800px', margin: '0 auto', padding: '20px', border: '2px solid aquamarine', borderRadius: '10px'}}>
+    <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '20px',
+          marginBottom: '30px'
+      }}>
+      <CarInput handleForm={handleForm} form={formData}/>
+      <LocationInput handleSubmit={handleSubmit} formHook={handleForm} form={formData} handleAddressChange={handleAddressChange} handleDestinationChange={handleDestinationChange}/>
+    </div>
+
+    <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: '20px',
+          marginBottom: '30px'
+      }}>
+      <GasInput formHook={handleForm} form={formData}/>
+    </div>
+    <button style={{width: '80px', height: '30px', position: 'absolute', top: '70%', right: '50%'}} type="submit" onClick={handleSubmit}>Calculate</button>
+    </div>
   )
 }
 

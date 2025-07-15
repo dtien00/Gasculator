@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from dotenv import load_dotenv
 import os
 import requests
+import googlemaps
 
 app = FastAPI()
 
@@ -21,6 +22,77 @@ app.add_middleware(
 
 # Serve static files (React assets like JS, CSS)
 app.mount("/static", StaticFiles(directory="../client/dist/assets"), name="static")
+
+
+# Routes for NHSTA API
+
+@app.get("/search-car-makes")
+def search_car_options(carYear: str):
+    baseUrl = 'https://www.fueleconomy.gov/ws/rest/vehicle/menu/make?' # Example URL: ws/rest/vehicle/menu/options?year=2012&make=Honda&model=Fit
+    params = []
+
+    print(baseUrl)
+    
+    params.append(f"year={carYear}")
+    
+    baseUrl += "&".join(params)
+    print("Fetching car options from:", baseUrl)
+
+    try:
+        response = requests.get(baseUrl)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        return {"error": str(e)}
+
+    # Return raw XML as text
+    return Response(content=response.text, media_type="application/xml")
+
+
+@app.get("/search-car-models")
+def search_car_options(carYear: str, carMake: str):
+    baseUrl = 'https://www.fueleconomy.gov/ws/rest/vehicle/menu/model?' # Example URL: ws/rest/vehicle/menu/options?year=2012&make=Honda&model=Fit
+    params = []
+
+    print(baseUrl)
+    
+    params.append(f"year={carYear}")
+    params.append(f"make={carMake}")
+    
+    baseUrl += "&".join(params)
+    print("Fetching car options from:", baseUrl)
+
+    try:
+        response = requests.get(baseUrl)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        return {"error": str(e)}
+
+    # Return raw XML as text
+    return Response(content=response.text, media_type="application/xml")
+
+
+@app.get("/search-car-options")
+def search_car_options(carYear: str, carMake: str, carModel: str):
+    baseUrl = 'https://www.fueleconomy.gov/ws/rest/vehicle/menu/options?' # Example URL: ws/rest/vehicle/menu/options?year=2012&make=Honda&model=Fit
+    params = []
+
+    print(baseUrl)
+    
+    params.append(f"year={carYear}")
+    params.append(f"make={carMake}")
+    params.append(f"model={carModel}")
+    
+    baseUrl += "&".join(params)
+    print("Fetching car options from:", baseUrl)
+
+    try:
+        response = requests.get(baseUrl)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        return {"error": str(e)}
+
+    # Return raw XML as text
+    return Response(content=response.text, media_type="application/xml")
 
 # Details about Google Places API
 # @app.get("/place-details")
@@ -56,6 +128,30 @@ def reverse_geocode(lat: float, lon: float):
     response = requests.get(url)
     return response.json()
     
+# Routes for Google Maps API
+@app.get("/determine-distance")
+def determine_distance(origin: str, destination: str):
+    api_key = os.getenv("GOOGLE_API_KEY")
+    gmaps = googlemaps.Client(key=api_key)
+    print("TYPE OF GOOGLE API KEY: ", type(api_key))
+    result = gmaps.distance_matrix(
+        origins=[origin],
+        destinations=[destination],
+        mode="driving",
+
+        departure_time="now"
+    )
+
+    # Obtain travel time
+    print("DISTANCE MATRIX RESULT: ", result)
+    duration = result['rows'][0]['elements'][0]['duration']['text']
+    distance = result['rows'][0]['elements'][0]['distance']['text']
+    return {
+        "duration": duration,
+        "distance": distance,
+        "origin": origin,
+        "destination": destination
+    }
 
 # Route for index.html
 @app.get("/")
@@ -69,7 +165,7 @@ async def hello():
 @app.post("/api/form")
 async def submit_form(data: dict):
     print("Form data received:", data)
-    return {"message": "Form submitted.", "data": data}
+    return {"message": "Form submitted. Calculating distance...", "data": data}
 
 # Fallback for React Router paths (e.g. /about, /dashboard)
 @app.get("/{full_path:path}")
