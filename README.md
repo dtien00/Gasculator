@@ -9,7 +9,7 @@ uvicorn main:app --reload
 cd client
 npm run dev
 
-Features to Implement (unsorted):
+# Features to Implement (unsorted):
 - Profiles (Car, Destination)
 - Gas Price Scraping
 

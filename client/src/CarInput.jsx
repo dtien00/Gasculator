@@ -5,9 +5,11 @@ function Input({ form_value, handleChange, disabled, suggestions, name, placehol
 
   return (
     <select name={name} value={form_value} onChange={handleChange} disabled={disabled}>
-        <option value="" disabled selected>{placeholder}</option>
+        <option value="" disabled>{placeholder}</option>
       {options.map(option => (
-        <option key={option.value} value={option.value}>{id_flag ? option.text:option.value}</option>
+        <option key={option.value} value={option.value}>
+          {id_flag ? option.text:option.value}
+        </option>
       ))}
     </select>
   );
@@ -29,23 +31,6 @@ function CarInput({ handleForm, form }) {
   const years = Array.from({ length: year_end - year_start + 1 }, (_, i) => year_start + i);
   const formattedYears = years.map(year => ({ value: year }));
 
-
-  const resetCarOptionData = () => {
-    setCarOption('');
-    setCarOptionSuggestions([]);
-  }
-
-  const resetCarModelData = () => {
-    setCarModel('');
-    setCarModelSuggestions([]);
-    resetCarOptionData();
-  }
-
-  const resetCarMakeData = () => {
-    setCarMake('');
-    setCarMakeSuggestions([]);
-    resetCarModelData();
-  }
 
   useEffect(() => {
     // react to any changes in car make, model, or year
@@ -103,6 +88,29 @@ function CarInput({ handleForm, form }) {
 
   }, [carOption, carModel, carMake, carYear]);
 
+  const resetCarOptionData = () => {
+    setCarOption('');
+    setCarOptionSuggestions([]);
+    const blankFormOption = {target: {name: "car_option", value: ""}};
+    handleForm(blankFormOption);
+  }
+
+  const resetCarModelData = () => {
+    setCarModel('');
+    setCarModelSuggestions([]);
+    const blankFormModel = {target: {name: "car_model", value: ""}};
+    handleForm(blankFormModel);
+    resetCarOptionData();
+  }
+
+  const resetCarMakeData = () => {
+    setCarMake('');
+    setCarMakeSuggestions([]);
+    const blankFormMake = {target: {name: "car_make", value: ""}};
+    handleForm(blankFormMake);
+    resetCarModelData();
+  }
+
   const handleInputChange = (e, s) => {
     // Update the specific state based on the input type
     switch (s){
@@ -116,6 +124,7 @@ function CarInput({ handleForm, form }) {
         break;
       case 'model':
         setCarModel(e.target.value)
+        resetCarOptionData(); // Reset options when model changes
         break;
       case 'option':
         setCarOption(e.target.value)
@@ -161,7 +170,7 @@ function CarInput({ handleForm, form }) {
 
         <label>Model:</label>
         <div style={{}}>
-            <Input  form_value={form.car_model} handleChange={(e) => {handleInputChange(e, 'model')}} disabled={carMake ? false : true} suggestions={carModelSuggestions} name={"car_model"} placeholder={"Select car model..."}/>
+            <Input form_value={form.car_model} handleChange={(e) => {handleInputChange(e, 'model')}} disabled={carMake ? false : true} suggestions={carModelSuggestions} name={"car_model"} placeholder={"Select car model..."}/>
         </div>
         <br/>
 
